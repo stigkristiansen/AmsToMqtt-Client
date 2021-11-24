@@ -1,0 +1,12 @@
+{
+    "id": "{B62676EF-8FF9-5DD9-2014-53F1465C7927}",
+    "name": "AmsReader",
+    "type": 3,
+    "vendor": "",
+    "aliases": [],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "AMSR",
+    "url": ""
+}

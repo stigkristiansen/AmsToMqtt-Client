@@ -1,0 +1,12 @@
+{
+    "id": "{95C8A4C7-4C08-6E3C-3DAF-572F42097939}",
+    "name": "AmsToMqtt Client",
+    "author": "Stig Kristiansen",
+    "url": "https://github.com/gskjold/AmsToMqttBridge",
+    "compatibility": {
+        "version": "5.5"
+    },
+    "version": "1.0",
+    "build": 0,
+    "date": 0
+}
