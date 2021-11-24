@@ -59,7 +59,7 @@ class AmsReader extends IPSModule {
 		if(isset($data->Payload)) {
 			$payload = json_decode($data->Payload);
 			if(isset($payload->data)) {
-				$this->SendDebug(__FUNCTION__, sprintf('Received data. The data was: %s', json_encode($data->Payload)), 0);	
+				$this->SendDebug(__FUNCTION__, sprintf('Received data. The data was: %s', $JSONString), 0);	
 				$this->HandlePayload($payload);
 				return;
 			} 
@@ -126,8 +126,8 @@ class AmsReader extends IPSModule {
 			$this->SetValue('I2', $Payload->data->I2);
 		}		
 
-		if(isset($Payload->data->L3)) { // L3 current
-			$this->SetValue('L3', $Payload->data->L3);
+		if(isset($Payload->data->I3)) { // L3 current
+			$this->SetValue('L3', $Payload->data->I3);
 		}		
 
 		if(isset($Payload->data->U1)) { // L1 voltage
