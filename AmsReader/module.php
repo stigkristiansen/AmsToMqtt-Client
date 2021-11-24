@@ -27,6 +27,13 @@ declare(strict_types=1);
 		}
 
 		public function ReceiveData($JSONString) {
-        	$this->SendDebug(__FUNCTION__, $JSONString, 0);
+			$data = json_decode($JSONString);
+			if(isset($data->Payload)) {
+				$this->SendDebug(__FUNCTION__, sprintf('Received data. The data was: %s', json_encode($data->Payload)), 0);	
+			} else {
+				$msg = sprintf('Received invalid data. Missing key "Payload". Data received was: %s ', $JSONString);
+        		$this->SendDebug(__FUNCTION__, $msg, 0);
+				$this-LogMessage($msg, KL_ERROR);
+			}
 		}
 	}
