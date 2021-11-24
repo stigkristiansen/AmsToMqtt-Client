@@ -4,9 +4,9 @@
     "type": 3,
     "vendor": "",
     "aliases": [],
-    "parentRequirements": [],
+    "parentRequirements": ["{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}"],
     "childRequirements": [],
-    "implemented": [],
+    "implemented": ["{E0C96EDE-7988-B16D-0157-D6B3F8CD1292}"],
     "prefix": "AMSR",
     "url": ""
 }
