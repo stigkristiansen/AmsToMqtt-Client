@@ -103,59 +103,59 @@ class AmsReader extends IPSModule {
 		}
 		
 		if(isset($Payload->data->P)) { // Active import
-			$this->SetValue('P', $Payload->P);
+			$this->SetValue('P', $Payload->data->P);
 		}
 /*		
 		if(isset($Payload->data->Q)) { // Reactive import
-			$this->SetValue('Q', $Payload->Q);
+			$this->SetValue('Q', $Payload->data->Q);
 		}		
 
 		if(isset($Payload->data->PO)) { //  Active export
-			$this->SetValue('PO', $Payload->PO);
+			$this->SetValue('PO', $Payload->data->PO);
 		}		
 
 		if(isset($Payload->data->QO)) { // Reactive export
-			$this->SetValue('QO', $Payload->QO);
+			$this->SetValue('QO', $Payload->data->QO);
 		}		
 */
 		if(isset($Payload->data->I1)) { // L1 current
-			$this->SetValue('I1', $Payload->I1);
+			$this->SetValue('I1', $Payload->data->I1);
 		}		
 
 		if(isset($Payload->data->I2)) { // L2 current
-			$this->SetValue('I2', $Payload->I2);
+			$this->SetValue('I2', $Payload->data->I2);
 		}		
 
 		if(isset($Payload->data->L3)) { // L3 current
-			$this->SetValue('L3', $Payload->L3);
+			$this->SetValue('L3', $Payload->data->L3);
 		}		
 
 		if(isset($Payload->data->U1)) { // L1 voltage
-			$this->SetValue('U1', $Payload->U1);
+			$this->SetValue('U1', $Payload->data->U1);
 		}		
 
 		if(isset($Payload->data->U2)) { // L2 voltage
-			$this->SetValue('U2', $Payload->U2);
+			$this->SetValue('U2', $Payload->data->U2);
 		}		
 
 		if(isset($Payload->data->U3)) { //  L3 voltage
-			$this->SetValue('U3', $Payload->U3);
+			$this->SetValue('U3', $Payload->data->U3);
 		}		
 
 		if(isset($Payload->data->tPI)) { // Hourly accumulated active import
-			$this->SetValue('tPI', $Payload->tPI);
+			$this->SetValue('tPI', $Payload->data->tPI);
 		}		
 /*
 		if(isset($Payload->data->tPO)) { // Hourly accumulated active export
-			$this->SetValue('tPO', $Payload->tPO);
+			$this->SetValue('tPO', $Payload->data->tPO);
 		}		
 
 		if(isset($Payload->data->tQI)) { // Hourly accumulated reactive import
-			$this->SetValue('tQI', $Payload->tQI);
+			$this->SetValue('tQI', $Payload->data->tQI);
 		}		
 
 		if(isset($Payload->data->tQO)) { // Hourly accumulated reactive export
-			$this->SetValue('tQO', $Payload->tQO);
+			$this->SetValue('tQO', $Payload->data->tQO);
 		}		
 */
 		$this->SendDebug(__FUNCTION__, 'Completed analyzing payload', 0);	
