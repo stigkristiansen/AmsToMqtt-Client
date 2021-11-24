@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-include __DIR__ . "/../libs/traits.php";
+include __DIR__ . "/../libs/profiles.php";
 
 class AmsReader extends IPSModule {
 	use Profiles;
