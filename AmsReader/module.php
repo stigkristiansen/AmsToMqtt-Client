@@ -76,13 +76,13 @@ class AmsReader extends IPSModule {
 		$this->SendDebug(__FUNCTION__, 'Updating variables...', 0);	
 	
 		if(isset($Payload->up)) { // ESP device uptime
-			$hours = $Payload->up % 3600;
+			$hours = (int)($Payload->up / 3600);
 			if($hours>0) {
 				$this->RegisterProfileIntegerMin('AMSR.Hours.' . $this->InstanceID, 'Hourglass', '', ' hours');
 				$this->SetValue('up', $hours);
 			} else {
 				$this->RegisterProfileIntegerMin('AMSR.Hours.' . $this->InstanceID, 'Hourglass', '', ' minutes');
-				$this->SetValue('up', $Payload->up % 60);
+				$this->SetValue('up', (int)($Payload->up / 60));
 			}
 		}
 
