@@ -20,7 +20,7 @@ class AmsReader extends IPSModule {
 		
 		$this->RegisterVariableString('name', 'Name', '', 0);
 		$this->RegisterVariableInteger('up', 'Uptime', 'AMSR.Hours.' . $this->InstanceID , 1);
-		$this->RegisterVariableFloat('vcc', 'VCC', '~Volt', 2);
+		$this->RegisterVariableFloat('vcc', 'Vcc', '~Volt', 2);
 		$this->RegisterVariableInteger('rssi', 'RSSI', 'AMSR.RSSI', 3);
 		$this->RegisterVariableFloat('temp', 'Temperature', '~Temperature', 4);
 		$this->RegisterVariableFloat('P', 'Active Power', '~Power', 5);
