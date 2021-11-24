@@ -127,7 +127,7 @@ class AmsReader extends IPSModule {
 		}		
 
 		if(isset($Payload->data->I3)) { // L3 current
-			$this->SetValue('L3', $Payload->data->I3);
+			$this->SetValue('I3', $Payload->data->I3);
 		}		
 
 		if(isset($Payload->data->U1)) { // L1 voltage
