@@ -19,7 +19,7 @@ class AmsReader extends IPSModule {
 		$this->RegisterProfileIntegerMin('AMSR.RSSI', 'Intensity' , '', ' dBm');
 		
 		$this->RegisterVariableString('name', 'Name', '', 0);
-		$this->RegisterVariableInteger('up', 'Uptime', 'AMSR.Hours.' . $this->InstanceID , 1);
+		$this->RegisterVariableInteger('up', 'Uptime', 'AMSR.Uptime.' . $this->InstanceID , 1);
 		$this->RegisterVariableFloat('vcc', 'Vcc', '~Volt', 2);
 		$this->RegisterVariableInteger('rssi', 'RSSI', 'AMSR.RSSI', 3);
 		$this->RegisterVariableFloat('temp', 'Temperature', '~Temperature', 4);
@@ -34,7 +34,7 @@ class AmsReader extends IPSModule {
 	}
 
 	public function Destroy() {
-		$this->DeleteProfile('AMSR.Hours.' . $this->InstanceID);	
+		$this->DeleteProfile('AMSR.Uptime.' . $this->InstanceID);	
 
 		$module = json_decode(file_get_contents(__DIR__ . '/module.json'));
 		if(count(IPS_GetInstanceListByModuleID($module->id))==0) {
@@ -78,10 +78,10 @@ class AmsReader extends IPSModule {
 		if(isset($Payload->up)) { // ESP device uptime
 			$hours = (int)($Payload->up / 3600);
 			if($hours>0) {
-				$this->RegisterProfileIntegerMin('AMSR.Hours.' . $this->InstanceID, 'Hourglass', '', ' hours');
+				$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' hours');
 				$this->SetValue('up', $hours);
 			} else {
-				$this->RegisterProfileIntegerMin('AMSR.Hours.' . $this->InstanceID, 'Hourglass', '', ' minutes');
+				$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' minutes');
 				$this->SetValue('up', (int)($Payload->up / 60));
 			}
 		}
