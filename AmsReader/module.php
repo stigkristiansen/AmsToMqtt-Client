@@ -17,6 +17,7 @@ class AmsReader extends IPSModule {
 
 		$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' hours');
 		$this->RegisterProfileIntegerMin('AMSR.RSSI', 'Intensity' , '', ' dBm');
+		$this->RegisterProfileFloatEx('AMSR.TemperatureNA', 'Temperature' , '', '', [[-127, 'N/A', '', -1]]);
 		
 		$this->RegisterVariableString('name', 'Name', '', 0);
 		$this->RegisterVariableInteger('up', 'Uptime', 'AMSR.Uptime.' . $this->InstanceID , 1);
@@ -39,6 +40,7 @@ class AmsReader extends IPSModule {
 		$module = json_decode(file_get_contents(__DIR__ . '/module.json'));
 		if(count(IPS_GetInstanceListByModuleID($module->id))==0) {
 			$this->DeleteProfile('AMSR.RSSI');
+			$this->DeleteProfile('AMSR.TemperatureNA');
 		}	
 		
 		//Never delete this line!
@@ -99,6 +101,12 @@ class AmsReader extends IPSModule {
 		}
 
 		if(isset($Payload->temp)) { // ESP device temperature
+			if($Payload->temp==-127) {
+				$this->RegisterVariableFloat('temp', 'Temperature', 'AMSR.TemperatureNA', 4);
+			} else {
+				$this->RegisterVariableFloat('temp', 'Temperature', '~Temperature', 4);
+			}
+			
 			$this->SetValue('temp', $Payload->temp);
 		}
 		

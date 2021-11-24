@@ -152,6 +152,30 @@ trait Profiles {
         IPS_SetVariableProfileText($Name, $Prefix, $Suffix);
     }
 
+    protected function RegisterProfileFloatEx($Name, $Icon, $Prefix, $Suffix, $Associations) {
+        
+        $this->RegisterProfileFloatMin($Name, $Icon, $Prefix, $Suffix);
+
+        foreach ($Associations as $association) {
+            IPS_SetVariableProfileAssociation($Name, $association[0], $association[1], $association[2], $association[3]);
+        }
+        
+        // Remove assiciations that is not specified in $Associations
+        $profileAssociations = IPS_GetVariableProfile($Name)['Associations'];
+        foreach($profileAssociations as $profileAssociation) {
+            $found = false;
+            foreach($Associations as $association) {
+                if($profileAssociation['Value']==$association[0]) {
+                    $found = true;
+                    break;
+                }
+            }
+
+            if(!$found)
+                IPS_SetVariableProfileAssociation($Name, $profileAssociation['Value'], '', '', -1);    
+        }
+    }
+
     protected function CreateProfileAssosiationList($List) {
         $count = 0;
         foreach($List as $value) {
