@@ -77,7 +77,7 @@ class AmsReader extends IPSModule {
 				$this->SetValue('up', $hours);
 			} else {
 				$this->RegisterProfileIntegerMin('AMSR.Hours.' . $this->InstanceID, 'Hourglass', '', ' minutes');
-				$this->SetValue('up', $Payload->up % 60;);
+				$this->SetValue('up', $Payload->up % 60);
 			}
 		}
 
