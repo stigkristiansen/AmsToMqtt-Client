@@ -62,7 +62,7 @@ class AmsReader extends IPSModule {
 		} else {
 			$msg = sprintf('Received invalid data. Missing key "Payload" and/or "data". Data received was: %s ', $JSONString);
 			$this->SendDebug(__FUNCTION__, $msg, 0);
-			$this-LogMessage($msg, KL_ERROR);
+			$this->LogMessage($msg, KL_ERROR);
 		}
 	}
 
