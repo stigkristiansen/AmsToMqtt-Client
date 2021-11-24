@@ -103,7 +103,7 @@ class AmsReader extends IPSModule {
 		}
 		
 		if(isset($Payload->data->P)) { // Active import
-			$this->SetValue('P', $Payload->data->P);
+			$this->SetValue('P', $Payload->data->P) / 1000;
 		}
 /*		
 		if(isset($Payload->data->Q)) { // Reactive import
