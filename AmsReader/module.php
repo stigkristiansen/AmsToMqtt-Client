@@ -15,7 +15,7 @@ class AmsReader extends IPSModule {
 
 		$this->RegisterPropertyString('MQTTTopic', '');
 
-		$this->RegisterProfileIntegerMin('AMSR.Hours.' . $this->InstanceID, 'Hourglass', '', ' hours');
+		$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' hours');
 		$this->RegisterProfileIntegerMin('AMSR.RSSI', 'Intensity' , '', ' dBm');
 		
 		$this->RegisterVariableString('name', 'Name', '', 0);
