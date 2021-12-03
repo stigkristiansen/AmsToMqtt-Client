@@ -63,14 +63,14 @@ class AmsReader extends IPSModule {
 		$data = json_decode($JSONString);
 		if(isset($data->Payload)) {
 			$payload = json_decode($data->Payload);
-			if(isset($payload->data)) {
+			if(isset($payload->id)) {
 				$this->SendDebug(__FUNCTION__, sprintf('Received data. The data was: %s', $JSONString), 0);	
 				$this->HandlePayload($payload);
 				return;
 			} 
 		}
 		
-		$msg = sprintf('Received invalid data. Missing key "Payload" and/or "Data". Data received was: %s ', $JSONString);
+		$msg = sprintf('Received invalid data. Missing key "Payload" and/or "Id". Data received was: %s ', $JSONString);
 		$this->SendDebug(__FUNCTION__, $msg, 0);
 		$this->LogMessage($msg, KL_ERROR);
 		
