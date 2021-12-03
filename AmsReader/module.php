@@ -126,7 +126,7 @@ class AmsReader extends IPSModule {
 			
 			$id = $this->GetIDForIdent('MaxPowerToday');
 			$info = IPS_GetVariable($id);
-			$lastUpdate = DateTime::createFromFormat( 'U', $info['VariableUpdated']);
+			$lastUpdate = DateTime::createFromFormat('U', (string)$info['VariableUpdated']);
 			$now = new DateTime('now');
 
 			if($this->GetHour()==0 && $lastUpdate->Format('dmY')!=$now->Format('dmY')) {
