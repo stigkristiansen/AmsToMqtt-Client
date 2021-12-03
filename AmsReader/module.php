@@ -198,7 +198,7 @@ class AmsReader extends IPSModule {
 
 	protected function GetHour() {
 		$now = new DateTime('now');
-		$hour = $now->Format('H')
+		$hour = $now->Format('H');
 		
 		return (int)$hour;
 	}
