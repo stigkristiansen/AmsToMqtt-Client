@@ -166,7 +166,7 @@ class AmsReader extends IPSModule {
 
 		if(isset($Payload->data->tPI)) { // Hourly accumulated active import
 			$import = $Payload->data->tPI;
-			$currentImport = $this->GetValue('tPI')
+			$currentImport = $this->GetValue('tPI');
 			
 			$this->SetValue('tPI', $import);
 
