@@ -119,7 +119,7 @@ class AmsReader extends IPSModule {
 		
 		
 		if(isset($Payload->data->P)) { // Active import
-			$activePower = $Payload->data->P / 1000
+			$activePower = $Payload->data->P / 1000;
 			$this->SetValue('P', $activePower);
 
 			$currentMaxPower = $this->GetValue('MaxPowerToday');
