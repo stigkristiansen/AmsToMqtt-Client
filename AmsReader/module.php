@@ -26,12 +26,15 @@ class AmsReader extends IPSModule {
 		$this->RegisterVariableFloat('temp', 'Temperature', '~Temperature', 4);
 		$this->RegisterVariableFloat('P', 'Active Power', '~Power', 5);
 		$this->RegisterVariableFloat('tPI', 'Total usage', '~Electricity', 6);
-		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 7);
-		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 8);
-		$this->RegisterVariableFloat('U2', 'Voltage L2', '~Volt', 9);
-		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 10);
-		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 11);
-		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 12);
+		$this->RegisterVariableFloat('UsageDaily', 'Daily usage', '~Electricity', 7);
+		$this->RegisterVariableFloat('UsageToday', 'Todays usage', '~Electricity', 8);
+		$this->RegisterVariableFloat('MaxPowerToday', 'Todays Max Power', '~Power', 9);
+		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 10);
+		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 11);
+		$this->RegisterVariableFloat('U2', 'Voltage L2', '~Volt', 12);
+		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 13);
+		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 14);
+		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 15);
 	}
 
 	public function Destroy() {
@@ -114,8 +117,15 @@ class AmsReader extends IPSModule {
 			$this->SetValue('temp', $Payload->temp);
 		}
 		
+		
 		if(isset($Payload->data->P)) { // Active import
-			$this->SetValue('P', $Payload->data->P / 1000);
+			$activePower = $Payload->data->P / 1000
+			$this->SetValue('P', $activePower);
+
+			$currentMaxPower = $this->GetValue('MaxPowerToday');
+			if($activePower>$currentMaxPower) {
+				$this->SetValue('MaxPowerToday', $activePower);
+			}
 		}
 /*		
 		if(isset($Payload->data->Q)) { // Reactive import
@@ -155,7 +165,20 @@ class AmsReader extends IPSModule {
 		}		
 
 		if(isset($Payload->data->tPI)) { // Hourly accumulated active import
-			$this->SetValue('tPI', $Payload->data->tPI);
+			$import = $Payload->data->tPI;
+			$currentImport = $this->GetValue('tPI')
+			
+			$this->SetValue('tPI', $import);
+
+			$usageToday = $this->GetValue('UsageToday');
+
+			if($this->GetHour()==0) {
+				$this->SetValue('UsageToday', 0);
+				$this->SetVale('UsageDaily', $usageToday);
+			} else {
+				$newUsageToday = $usageToday + ($currentImport-$import);
+				$this->SetValue('UsageToday', $newUsageToday);
+			}
 		}		
 /*
 		if(isset($Payload->data->tPO)) { // Hourly accumulated active export
@@ -171,5 +194,12 @@ class AmsReader extends IPSModule {
 		}		
 */
 		$this->SendDebug(__FUNCTION__, 'Completed analyzing payload', 0);	
+	}
+
+	protected function GetHour() {
+		$now = new DateTime('now');
+		$hour = $now->Format('H')
+		
+		return (int)$hour;
 	}
 }
