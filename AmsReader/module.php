@@ -196,10 +196,9 @@ class AmsReader extends IPSModule {
 		$this->SendDebug(__FUNCTION__, 'Completed analyzing payload', 0);	
 	}
 
-	protected function GetHour() {
+	private function GetHour() {
 		$now = new DateTime('now');
-		$hour = $now->Format('H');
-		
-		return (int)$hour;
+			
+		return (int)$now->Format('H');
 	}
 }
