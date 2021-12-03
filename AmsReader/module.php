@@ -76,7 +76,7 @@ class AmsReader extends IPSModule {
 		
 	}
 
-	protected function HandlePayload(object $Payload) {
+	private function HandlePayload(object $Payload) {
 		$this->SendDebug(__FUNCTION__, 'Analyzing payload...', 0);	
 		$this->SendDebug(__FUNCTION__, 'Updating variables...', 0);	
 	
