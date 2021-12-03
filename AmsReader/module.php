@@ -131,9 +131,7 @@ class AmsReader extends IPSModule {
 
 			if($this->GetHour()==0 && $lastUpdate->Format('dmY')!=$now->Format('dmY')) {
 				$this->SetValue('MaxPowerToday', $activePower);
-			}
-			
-			if($activePower>$currentMaxPower) {
+			} else if($activePower>$currentMaxPower) {
 				$this->SetValue('MaxPowerToday', $activePower);
 			}
 		}
