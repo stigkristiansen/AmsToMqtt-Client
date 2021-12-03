@@ -178,15 +178,16 @@ class AmsReader extends IPSModule {
 			
 			$this->SetValue('tPI', $newImport);
 
-			if($this->GetHour()==0) {
-				$this->SetValue('UsageToday', 0);
-			} 
-	
 			$usageToday = $this->GetValue('UsageToday');
 			$newUsageToday = $usageToday + ($newImport-$currentImport);
-			$this->SetValue('UsageToday', $newUsageToday);
 			
-		}		
+			if($this->GetHour()==0) {
+				$this->SetValue('UsageToday', 0);
+				$this->SetValue('UsageDaily', $newUsageToday);
+			} else {
+				$this->SetValue('UsageToday', $newUsageToday);
+			}
+	}		
 /*
 		if(isset($Payload->data->tPO)) { // Hourly accumulated active export
 			$this->SetValue('tPO', $Payload->data->tPO);
