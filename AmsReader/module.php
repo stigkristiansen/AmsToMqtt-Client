@@ -25,9 +25,9 @@ class AmsReader extends IPSModule {
 		$this->RegisterVariableInteger('rssi', 'RSSI', 'AMSR.RSSI', 3);
 		$this->RegisterVariableFloat('temp', 'Temperature', '~Temperature', 4);
 		$this->RegisterVariableFloat('P', 'Active Power', '~Power', 5);
-		$this->RegisterVariableFloat('tPI', 'Total usage', '~Electricity', 6);
-		$this->RegisterVariableFloat('UsageDaily', 'Daily usage', '~Electricity', 7);
-		$this->RegisterVariableFloat('UsageToday', 'Todays usage', '~Electricity', 8);
+		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 6);
+		$this->RegisterVariableFloat('UsageDaily', 'Daily Usage', '~Electricity', 7);
+		$this->RegisterVariableFloat('UsageToday', 'Todays Usage', '~Electricity', 8);
 		$this->RegisterVariableFloat('MaxPowerToday', 'Todays Max Power', '~Power', 9);
 		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 10);
 		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 11);
