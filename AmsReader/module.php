@@ -233,3 +233,4 @@ class AmsReader extends IPSModule {
 		$offset = timezone_offset_get($now->getTimezone(), $now);
 		return 86400-(time()+$offset)%86400;
 	}
+}
