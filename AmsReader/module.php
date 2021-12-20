@@ -129,10 +129,14 @@ class AmsReader extends IPSModule {
 			$now = hrtime(true);
 			$lastUpdateActivePower = json_decode($this->GetBuffer('LastUpdateActivePower'));
 			if($lastUpdateActivePower!=0) {
-				$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
-				$totalNow = $this->GetValue('AccToday');
-				$newTotal = $totalNow + $diff*$activePower;
-				$this->SetValue('AccToday', $newTotal);
+				if($this->SecondsToMidnight()<5) {
+					$this->SetValue('AccToday', 0);
+				} else {
+					$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
+					$totalNow = $this->GetValue('AccToday');
+					$newTotal = $totalNow + $diff*$activePower;
+					$this->SetValue('AccToday', $newTotal);
+				}
 			}
 			$this->SetBuffer('LastUpdateActivePower', json_encode($now));
 
@@ -223,4 +227,9 @@ class AmsReader extends IPSModule {
 			
 		return (int)$now->Format('H');
 	}
-}
+
+	private function SecondsToMidnight() {
+		$now = new DateTime('now');
+		$offset = timezone_offset_get($now->getTimezone(), $now);
+		return 86400-(time()+$offset)%86400;
+	}
