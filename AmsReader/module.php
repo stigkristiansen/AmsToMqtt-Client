@@ -134,7 +134,7 @@ class AmsReader extends IPSModule {
 				$newTotal = $totalNow + $diff*$activePower;
 				$this->SetValue('AccToday', $newTotal);
 			}
-			$this->SetBuffer('LastUpdateActivePower', $json_encode($now));
+			$this->SetBuffer('LastUpdateActivePower', json_encode($now));
 
 			$currentMaxPower = $this->GetValue('MaxPowerToday');
 			
