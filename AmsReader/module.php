@@ -25,6 +25,7 @@ class AmsReader extends IPSModule {
 		$this->RegisterVariableInteger('rssi', 'RSSI', 'AMSR.RSSI', 3);
 		$this->RegisterVariableFloat('temp', 'Temperature', '~Temperature', 4);
 		$this->RegisterVariableFloat('P', 'Active Power', '~Power', 5);
+		$this->RegisterVariableFloat('AccToday', 'Accumulated Today', '~Electricity', 7);
 		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 6);
 		$this->RegisterVariableFloat('UsageDaily', 'Daily Usage', '~Electricity', 7);
 		$this->RegisterVariableFloat('UsageToday', 'Todays Usage', '~Electricity', 8);
@@ -57,6 +58,9 @@ class AmsReader extends IPSModule {
 		$this->ConnectParent('{C6D2AEB3-6E1F-4B2E-8E69-3A1A00246850}');
 					
 		$this->SetReceiveDataFilter('.*' . $this->ReadPropertyString('MQTTTopic') . '".*');
+
+		$this->SetBuffer('LastUpdateActivePower',json_encode(0));
+		$this->SetValue('AccToday', 0);
 	}
 
 	public function ReceiveData($JSONString) {
@@ -121,6 +125,16 @@ class AmsReader extends IPSModule {
 		if(isset($Payload->data->P)) { // Active import
 			$activePower = $Payload->data->P / 1000;
 			$this->SetValue('P', $activePower);
+
+			$now = hrtime(true);
+			$lastUpdateActivePower = josn_decode($this->GetBuffer('LastUpdateActivePower'));
+			if($lastUpdateActivePower!=0) {
+				$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
+				$totalNow = $this->GetValue('AccToday');
+				$newTotal = $totalNow + $diff*$activePower;
+				$this->SetValue('AccToday', $newTotal);
+			}
+			$this->SetBuffer('LastUpdateActivePower', $json_encode($now));
 
 			$currentMaxPower = $this->GetValue('MaxPowerToday');
 			
