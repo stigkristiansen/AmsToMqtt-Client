@@ -25,17 +25,18 @@ class AmsReader extends IPSModule {
 		$this->RegisterVariableInteger('rssi', 'RSSI', 'AMSR.RSSI', 3);
 		$this->RegisterVariableFloat('temp', 'Temperature', '~Temperature', 4);
 		$this->RegisterVariableFloat('P', 'Active Power', '~Power', 5);
-		$this->RegisterVariableFloat('AccToday', 'Accumulated Today', '~Electricity', 7);
-		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 6);
-		$this->RegisterVariableFloat('UsageDaily', 'Daily Usage', '~Electricity', 7);
-		$this->RegisterVariableFloat('UsageToday', 'Todays Usage', '~Electricity', 8);
-		$this->RegisterVariableFloat('MaxPowerToday', 'Todays Max Power', '~Power', 9);
-		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 10);
-		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 11);
-		$this->RegisterVariableFloat('U2', 'Voltage L2', '~Volt', 12);
-		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 13);
-		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 14);
-		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 15);
+		$this->RegisterVariableFloat('AccToday', 'Accumulated Today', '~Electricity', 6);
+		$this->RegisterVariableFloat('AccHour', 'Accumulated Last Hour', '~Electricity', 7);
+		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 8);
+		$this->RegisterVariableFloat('UsageDaily', 'Daily Usage', '~Electricity', 9);
+		$this->RegisterVariableFloat('UsageToday', 'Todays Usage', '~Electricity', 10);
+		$this->RegisterVariableFloat('MaxPowerToday', 'Todays Max Power', '~Power', 11);
+		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 12);
+		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 13);
+		$this->RegisterVariableFloat('U2', 'Voltage L2', '~Volt', 14);
+		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 15);
+		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 16);
+		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 17);
 	}
 
 	public function Destroy() {
@@ -61,6 +62,7 @@ class AmsReader extends IPSModule {
 
 		$this->SetBuffer('LastUpdateActivePower',json_encode(0));
 		$this->SetValue('AccToday', 0);
+		$this->SetValue('AccHour', 0);
 	}
 
 	public function ReceiveData($JSONString) {
@@ -129,13 +131,22 @@ class AmsReader extends IPSModule {
 			$now = hrtime(true);
 			$lastUpdateActivePower = json_decode($this->GetBuffer('LastUpdateActivePower'));
 			if($lastUpdateActivePower!=0) {
+				$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
+
 				if($this->SecondsToMidnight()<5) {
 					$this->SetValue('AccToday', 0);
 				} else {
-					$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
 					$totalNow = $this->GetValue('AccToday');
 					$newTotal = $totalNow + $diff*$activePower;
 					$this->SetValue('AccToday', $newTotal);
+				}
+
+				if($this->SecondsToNextHour()<5) {
+					$this->SetValue('AccHour', 0);
+				} else {
+					$totalNow = $this->GetValue('AccHour');
+					$newTotal = $totalNow + $diff*$activePower;
+					$this->SetValue('AccHour', $newTotal);
 				}
 			}
 			$this->SetBuffer('LastUpdateActivePower', json_encode($now));
@@ -232,5 +243,11 @@ class AmsReader extends IPSModule {
 		$now = new DateTime('now');
 		$offset = timezone_offset_get($now->getTimezone(), $now);
 		return 86400-(time()+$offset)%86400;
+	}
+
+	private function SecondsToNextHour() {
+		$now = new DateTime('now');
+		$offset = timezone_offset_get($now->getTimezone(), $now);
+		return 3600-(time()+$offset)%3600;
 	}
 }
