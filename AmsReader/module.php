@@ -109,6 +109,8 @@ class AmsReader extends IPSModule {
 			$this->SendDebug(__FUNCTION__, 'Reset AccHour', 0);	
 
 			$this->Unlock('UpdatingAccumulatedValues');
+		} else {
+			$this->SendDebug(__FUNCTION__, 'Unable to reset values. Failed to create å lock', 0);	
 		}
 	}
 
