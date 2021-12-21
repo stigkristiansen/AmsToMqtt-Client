@@ -146,10 +146,10 @@ class AmsReader extends IPSModule {
 				$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' days');
 				$this->SetValue('up', (int)($hours / 24));
 			} else if($hours>0) {
-				$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' hours');
+				$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' hour(s)');
 				$this->SetValue('up', $hours);
 			} else {
-				$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' minutes');
+				$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' minute(s)');
 				$this->SetValue('up', (int)($Payload->up / 60));
 			}
 		}
