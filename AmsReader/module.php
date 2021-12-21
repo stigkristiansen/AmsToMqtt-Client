@@ -84,7 +84,7 @@ class AmsReader extends IPSModule {
 
 	private function InitTimer() {
 		$seconds = SecondsToNextHour();
-		$this->SetTimerInterval('NewHour', $seconds<5?1:($seconds-5)*1000;
+		$this->SetTimerInterval('NewHour', $seconds<5?1:($seconds-5)*1000);
 	}
 
 	private function InitAccumulatedValues() {
