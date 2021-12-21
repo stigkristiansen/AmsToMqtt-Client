@@ -187,7 +187,7 @@ class AmsReader extends IPSModule {
 			if($lastUpdateActivePower!=0) {
 				$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
 
-				if(Lock('UpdatingAccumulatedValues')) {
+				if($this->Lock('UpdatingAccumulatedValues')) {
 					//if($this->SecondsToMidnight()<5) {
 					//	$this->SetValue('AccToday', 0);
 					//} else {
