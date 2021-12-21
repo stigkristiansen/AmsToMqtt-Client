@@ -96,13 +96,17 @@ class AmsReader extends IPSModule {
 
 	private function ResetAccumulatedValues() {
 		$this->SetTimerInterval('NewHour', 3600000); 
+
+		$this->SendDebug(__FUNCTION__, 'Resetting accumulated values if neccessary...', 0);	
 		
 		if($this->Lock('UpdatingAccumulatedValues')) {
 			if($this->GetHour()==23) {
 				$this->SetValue('AccToday', 0);
+				$this->SendDebug(__FUNCTION__, 'Reset AccToday', 0);	
 			}
 			
 			$this->SetValue('AccHour', 0);
+			$this->SendDebug(__FUNCTION__, 'Reset AccHour', 0);	
 
 			$this->Unlock('UpdatingAccumulatedValues');
 		}
