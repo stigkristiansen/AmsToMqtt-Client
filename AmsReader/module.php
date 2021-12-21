@@ -118,7 +118,7 @@ class AmsReader extends IPSModule {
 		$this->SendDebug( __FUNCTION__ , sprintf('ReqestAction called for Ident "%s" with Value %s', $Ident, (string)$Value), 0);
 		
 		switch (strtolower($Ident)) {
-			case 'NewHour':
+			case 'newhour':
 				$this->ResetAccumulatedValues();
 				break;
 		}
