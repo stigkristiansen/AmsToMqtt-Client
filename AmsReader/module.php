@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 include __DIR__ . "/../libs/profiles.php";
+include __DIR__ . "/../libs/buffer.php";
+
 
 class AmsReader extends IPSModule {
 	use Profiles;
+	use Buffer;
 	
 	public function Create() {
 		//Never delete this line!
@@ -37,6 +40,10 @@ class AmsReader extends IPSModule {
 		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 15);
 		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 16);
 		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 17);
+
+		$this->RegisterTimer('NewHour', 0, 'IPS_RequestAction(' . (string)$this->InstanceID . ', "NewHour", 0);'); 
+
+		$this->RegisterMessage(0, IPS_KERNELMESSAGE);
 	}
 
 	public function Destroy() {
@@ -60,11 +67,57 @@ class AmsReader extends IPSModule {
 					
 		$this->SetReceiveDataFilter('.*' . $this->ReadPropertyString('MQTTTopic') . '".*');
 
+		$this->InitAccumulatedValues();
+
+		if (IPS_GetKernelRunlevel() == KR_READY) {
+			$this->InitTimer();
+		}
+	}
+
+	public function MessageSink($TimeStamp, $SenderID, $Message, $Data) {
+		parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
+
+		if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
+			$this->InitTimer();
+		}
+	}
+
+	private function InitTimer() {
+		$seconds = SecondsToNextHour();
+		$this->SetTimerInterval('NewHour', $seconds<5?1:($seconds-5)*1000;
+	}
+
+	private function InitAccumulatedValues() {
 		$this->SetBuffer('LastUpdateActivePower',json_encode(0));
+		
 		$this->SetValue('AccToday', 0);
 		$this->SetValue('AccHour', 0);
 	}
 
+	private function ResetAccumulatedValues() {
+		$this->SetTimerInterval('NewHour', 3600000); 
+		
+		if($this->Lock('UpdatingAccumulatedValues')) {
+			if($this->GetHour()==23) {
+				$this->SetValue('AccToday', 0);
+			}
+			
+			$this->SetValue('AccHour', 0);
+
+			$this->Unlock('UpdatingAccumulatedValues');
+		}
+	}
+
+	public function RequestAction($Ident, $Value) {
+		$this->SendDebug( __FUNCTION__ , sprintf('ReqestAction called for Ident "%s" with Value %s', $Ident, (string)$Value), 0);
+		
+		switch (strtolower($Ident)) {
+			case 'NewHour':
+				$this->ResetAccumulatedValues();
+				break;
+		}
+	}
+		
 	public function ReceiveData($JSONString) {
 		$data = json_decode($JSONString);
 		if(isset($data->Payload)) {
@@ -130,25 +183,32 @@ class AmsReader extends IPSModule {
 
 			$now = hrtime(true);
 			$lastUpdateActivePower = json_decode($this->GetBuffer('LastUpdateActivePower'));
+			
 			if($lastUpdateActivePower!=0) {
 				$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
 
-				if($this->SecondsToMidnight()<5) {
-					$this->SetValue('AccToday', 0);
-				} else {
+				if(Lock('UpdatingAccumulatedValues')) {
+					//if($this->SecondsToMidnight()<5) {
+					//	$this->SetValue('AccToday', 0);
+					//} else {
 					$totalNow = $this->GetValue('AccToday');
 					$newTotal = $totalNow + $diff*$activePower;
 					$this->SetValue('AccToday', $newTotal);
-				}
+					//}
 
-				if($this->SecondsToNextHour()<5) {
-					$this->SetValue('AccHour', 0);
-				} else {
+				
+					//if($toNextHour = $this->SecondsToNextHour()<5) {
+					//	$this->SetValue('AccHour', 0);
+					//} else {
 					$totalNow = $this->GetValue('AccHour');
 					$newTotal = $totalNow + $diff*$activePower;
 					$this->SetValue('AccHour', $newTotal);
+					//}
+					$this->Unlock('UpdatingAccumulatedValues');
+
 				}
 			}
+
 			$this->SetBuffer('LastUpdateActivePower', json_encode($now));
 
 			$currentMaxPower = $this->GetValue('MaxPowerToday');
