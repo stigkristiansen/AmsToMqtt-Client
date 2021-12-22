@@ -199,7 +199,7 @@ class AmsReader extends IPSModule {
 				$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
 				$deltaUsage = $diff*$activePower;
 				//if($this->Lock('UpdatingAccumulatedValues')) {
-					if($this->ay('AccToday')) {
+					if($this->CheckVariableByChangedDay('AccToday')) {
 						$totalNow = $this->GetValue('AccToday');
 						$newTotal = $totalNow + $deltaUsage;
 						$this->SetValue('AccToday', $newTotal);
@@ -323,14 +323,14 @@ class AmsReader extends IPSModule {
 	}
 
 	private function CheckVariableByChangedDay($Ident) {
-		$lastChanged = $this->GetVariableChanged($ident);
+		$lastChanged = $this->GetVariableChanged($Ident);
         $now = new DateTime('now');
                 		               
         return $now->format('Ymd')==$lastChanged->format('Ymd');
     }
 
 	private function CheckVariableByChangedHour($Ident) {
-		$lastChanged = $this->GetVariableChanged($ident);
+		$lastChanged = $this->GetVariableChanged($Ident);
         $now = new DateTime('now');
                 		               
         return $now->format('YmdH')==$lastChanged->format('YmdH');
