@@ -322,7 +322,7 @@ class AmsReader extends IPSModule {
 		return 3600-(time()+$offset)%3600;
 	}
 
-	private function CheckVariableByChangedDate($Ident) {
+	private function CheckVariableByChangedDay($Ident) {
 		$lastChanged = $this->GetVariableChanged($ident);
         $now = new DateTime('now');
                 		               
