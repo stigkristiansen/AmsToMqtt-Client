@@ -90,7 +90,7 @@ class AmsReader extends IPSModule {
 	private function InitAccumulatedValues() {
 		$this->SetBuffer('LastUpdateActivePower',json_encode(hrtime(true)));
 		
-		if(!CheckVariableByChangedDate('AccToday')) {
+		if(!CheckVariableByChangedDay('AccToday')) {
 			$this->SetValue('AccToday', 0);
 		}
 
