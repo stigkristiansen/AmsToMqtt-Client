@@ -84,14 +84,19 @@ class AmsReader extends IPSModule {
 
 	private function InitTimer() {
 		$seconds = $this->SecondsToNextHour();
-		$this->SetTimerInterval('NewHour', $seconds<5?1:($seconds-5)*1000);
+		//$this->SetTimerInterval('NewHour', $seconds<5?1:($seconds-5)*1000);
 	}
 
 	private function InitAccumulatedValues() {
-		$this->SetBuffer('LastUpdateActivePower',json_encode(0));
+		$this->SetBuffer('LastUpdateActivePower',json_encode(hrtime(true)));
 		
-		$this->SetValue('AccToday', 0);
-		$this->SetValue('AccHour', 0);
+		if(!CheckVariableByChangedDate('AccToday') {
+			$this->SetValue('AccToday', 0);
+		}
+
+		if(!CheckVariableByChangedHour('AccHour') {
+			$this->SetValue('AccHour', 0);
+		}
 	}
 
 	private function ResetAccumulatedValues() {
@@ -192,27 +197,27 @@ class AmsReader extends IPSModule {
 			
 			if($lastUpdateActivePower!=0) {
 				$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
-
-				if($this->Lock('UpdatingAccumulatedValues')) {
-					//if($this->SecondsToMidnight()<5) {
-					//	$this->SetValue('AccToday', 0);
-					//} else {
-					$totalNow = $this->GetValue('AccToday');
-					$newTotal = $totalNow + $diff*$activePower;
-					$this->SetValue('AccToday', $newTotal);
-					//}
+				$deltaUsage = $diff*$activePower;
+				//if($this->Lock('UpdatingAccumulatedValues')) {
+					if(CheckVariableByChangedDay('AccToday')) {
+						$totalNow = $this->GetValue('AccToday');
+						$newTotal = $totalNow + $deltaUsage;
+						$this->SetValue('AccToday', $newTotal);
+					} else {
+						$this->SetValue('AccToday', $deltaUsage);
+					}
 
 				
-					//if($toNextHour = $this->SecondsToNextHour()<5) {
-					//	$this->SetValue('AccHour', 0);
-					//} else {
-					$totalNow = $this->GetValue('AccHour');
-					$newTotal = $totalNow + $diff*$activePower;
-					$this->SetValue('AccHour', $newTotal);
-					//}
-					$this->Unlock('UpdatingAccumulatedValues');
+					if(CheckVariableByChangedHour('AccHour')) {
+						$totalNow = $this->GetValue('AccHour');
+						$newTotal = $totalNow + $deltaUsage;
+						$this->SetValue('AccHour', $newTotal);
+					} else {
+						$this->SetValue('AccHour', $deltaUsage);
+					}
 
-				}
+					//$this->Unlock('UpdatingAccumulatedValues');
+				//}
 			}
 
 			$this->SetBuffer('LastUpdateActivePower', json_encode($now));
@@ -315,5 +320,28 @@ class AmsReader extends IPSModule {
 		$now = new DateTime('now');
 		$offset = timezone_offset_get($now->getTimezone(), $now);
 		return 3600-(time()+$offset)%3600;
+	}
+
+	private function CheckVariableByChangedDate($Ident) {
+		$lastChanged = $this->GetVariableChanged($ident);
+        $now = new DateTime('now');
+                		               
+        return $now->format('Ymd')==$lastChanged->format('Ymd');
+    }
+
+	private function CheckVariableByChangedHour($Ident) {
+		$lastChanged = $this->GetVariableChanged($ident);
+        $now = new DateTime('now');
+                		               
+        return $now->format('YmdH')==$lastChanged->format('YmdH');
+    }
+
+	private function GetVariableChanged(string $Ident) {
+		$variable = IPS_GetVariable($this->GetIDForIdent($Ident));
+		
+		$dt = new DateTime();
+		$dt->setTimestamp($variable['VariableChanged']);
+
+		return $dt;
 	}
 }
