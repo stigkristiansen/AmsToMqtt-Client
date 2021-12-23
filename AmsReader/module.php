@@ -28,13 +28,13 @@ class AmsReader extends IPSModule {
 		$this->RegisterVariableInteger('rssi', 'RSSI', 'AMSR.RSSI', 3);
 		$this->RegisterVariableFloat('temp', 'Temperature', '~Temperature', 4);
 		$this->RegisterVariableFloat('P', 'Active Power', '~Power', 5);
-		$this->RegisterVariableFloat('AccMonth', 'Accumulated Month', '~Electricity', 6);
-		$this->RegisterVariableFloat('AccToday', 'Accumulated Today', '~Electricity', 7);
-		$this->RegisterVariableFloat('AccHour', 'Accumulated Last Hour', '~Electricity', 8);
-		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 9);
+		$this->RegisterVariableFloat('MaxPowerToday', 'Todays Max Power', '~Power', 6);
+		$this->RegisterVariableFloat('AccHour', 'Accumulated Last Hour', '~Electricity', 7);
+		$this->RegisterVariableFloat('AccToday', 'Accumulated Today', '~Electricity', 8);
+		$this->RegisterVariableFloat('AccMonth', 'Accumulated Month', '~Electricity', 9);
 		$this->RegisterVariableFloat('DailyUsage', 'Daily Usage', '~Electricity', 10);
 		$this->RegisterVariableFloat('MonthlyUsage', 'Monthly Usage', '~Electricity', 11);
-		$this->RegisterVariableFloat('MaxPowerToday', 'Todays Max Power', '~Power', 12);
+		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 12);
 		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 13);
 		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 14);
 		$this->RegisterVariableFloat('U2', 'Voltage L2', '~Volt', 15);
@@ -106,7 +106,7 @@ class AmsReader extends IPSModule {
 	}
 
 	private function TransferValues() {
-		if(IsLastDayInMonth()) {
+		if($this->IsLastDayInMonth()) {
 			$this->SetValue('MonthlyUsage', $this->GetValue('AccMonth'));
 		}
 
