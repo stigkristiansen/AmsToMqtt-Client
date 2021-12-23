@@ -28,20 +28,22 @@ class AmsReader extends IPSModule {
 		$this->RegisterVariableInteger('rssi', 'RSSI', 'AMSR.RSSI', 3);
 		$this->RegisterVariableFloat('temp', 'Temperature', '~Temperature', 4);
 		$this->RegisterVariableFloat('P', 'Active Power', '~Power', 5);
-		$this->RegisterVariableFloat('AccToday', 'Accumulated Today', '~Electricity', 6);
-		$this->RegisterVariableFloat('AccHour', 'Accumulated Last Hour', '~Electricity', 7);
-		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 8);
-		$this->RegisterVariableFloat('UsageDaily', 'Daily Usage', '~Electricity', 9);
-		$this->RegisterVariableFloat('UsageToday', 'Todays Usage', '~Electricity', 10);
-		$this->RegisterVariableFloat('MaxPowerToday', 'Todays Max Power', '~Power', 11);
-		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 12);
-		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 13);
-		$this->RegisterVariableFloat('U2', 'Voltage L2', '~Volt', 14);
-		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 15);
-		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 16);
-		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 17);
+		$this->RegisterVariableFloat('AccMonth', 'Accumulated Month', '~Electricity', 6);
+		$this->RegisterVariableFloat('AccToday', 'Accumulated Today', '~Electricity', 7);
+		$this->RegisterVariableFloat('AccHour', 'Accumulated Last Hour', '~Electricity', 8);
+		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 9);
+		$this->RegisterVariableFloat('DailyUsage', 'Daily Usage', '~Electricity', 10);
+		$this->RegisterVariableFloat('MonthlyUsage', 'Monthly Usage', '~Electricity', 11);
+		$this->RegisterVariableFloat('MaxPowerToday', 'Todays Max Power', '~Power', 12);
+		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 13);
+		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 14);
+		$this->RegisterVariableFloat('U2', 'Voltage L2', '~Volt', 15);
+		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 16);
+		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 17);
+		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 18);
 
-		$this->RegisterTimer('NewHour', 0, 'IPS_RequestAction(' . (string)$this->InstanceID . ', "NewHour", 0);'); 
+		$this->RegisterTimer('Midnight', 0, 'IPS_RequestAction(' . (string)$this->InstanceID . ', "Midnight", 0);'); 
+		$this->RegisterTimer('SetMidnightTimer', 0, 'IPS_RequestAction(' . (string)$this->InstanceID . ', "SetMidnightTimer", 0);'); 
 
 		$this->RegisterMessage(0, IPS_KERNELMESSAGE);
 	}
@@ -83,12 +85,16 @@ class AmsReader extends IPSModule {
 	}
 
 	private function InitTimer() {
-		$seconds = $this->SecondsToNextHour();
-		//$this->SetTimerInterval('NewHour', $seconds<5?1:($seconds-5)*1000);
+		$seconds = $this->SecondsToMidnight()-2;
+		$this->SetTimerInterval('Midnight', $seconds*1000);
 	}
 
 	private function InitAccumulatedValues() {
 		$this->SetBuffer('LastUpdateActivePower',json_encode(hrtime(true)));
+
+		if(!$this->CheckVariableByChangedMonth('AccMonth')) {
+			$this->SetValue('AccMonth', 0);
+		}
 		
 		if(!$this->CheckVariableByChangedDay('AccToday')) {
 			$this->SetValue('AccToday', 0);
@@ -99,33 +105,25 @@ class AmsReader extends IPSModule {
 		}
 	}
 
-	private function ResetAccumulatedValues() {
-		$this->SetTimerInterval('NewHour', 3600000); 
-
-		$this->SendDebug(__FUNCTION__, 'Resetting accumulated values if neccessary...', 0);	
-		
-		if($this->Lock('UpdatingAccumulatedValues')) {
-			if($this->GetHour()==23) {
-				$this->SetValue('AccToday', 0);
-				$this->SendDebug(__FUNCTION__, 'Reset AccToday', 0);	
-			}
-			
-			$this->SetValue('AccHour', 0);
-			$this->SendDebug(__FUNCTION__, 'Reset AccHour', 0);	
-
-			$this->Unlock('UpdatingAccumulatedValues');
-		} else {
-			$this->SendDebug(__FUNCTION__, 'Unable to reset values. Failed to create å lock', 0);	
+	private function TransferValues() {
+		if(IsLastDayInMonth()) {
+			$this->SetValue('MonthlyUsage', $this->GetValue('AccMonth'));
 		}
+
+		$this->SetValue('DailyUsage', $this->GetValue('AccDay'));
 	}
 
 	public function RequestAction($Ident, $Value) {
 		$this->SendDebug( __FUNCTION__ , sprintf('ReqestAction called for Ident "%s" with Value %s', $Ident, (string)$Value), 0);
 		
 		switch (strtolower($Ident)) {
-			case 'newhour':
-				$this->ResetAccumulatedValues();
+			case 'midnight':
+				$this->SetTimerInterval('SetMidnightTimer', 5000);
+				$this->TransferValues();
 				break;
+			case 'setmidnighttimer':
+				$this->SetTimerInterval('SetMidnightTimer', 0);
+				$this->InitTimer();
 		}
 	}
 		
@@ -143,7 +141,6 @@ class AmsReader extends IPSModule {
 		$msg = sprintf('Received invalid data. Missing key "Payload" and/or "Id". Data received was: %s ', $JSONString);
 		$this->SendDebug(__FUNCTION__, $msg, 0);
 		$this->LogMessage($msg, KL_ERROR);
-		
 	}
 
 	private function HandlePayload(object $Payload) {
@@ -187,67 +184,52 @@ class AmsReader extends IPSModule {
 			$this->SetValue('temp', $Payload->temp);
 		}
 		
-		
 		if(isset($Payload->data->P)) { // Active import
+			$now = hrtime(true);
+
 			$activePower = $Payload->data->P / 1000;
 			$this->SetValue('P', $activePower);
-
-			$now = hrtime(true);
+			
 			$lastUpdateActivePower = json_decode($this->GetBuffer('LastUpdateActivePower'));
 			
 			if($lastUpdateActivePower!=0) {
 				$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
 				$deltaUsage = $diff*$activePower;
-				//if($this->Lock('UpdatingAccumulatedValues')) {
-					if($this->CheckVariableByChangedDay('AccToday')) {
-						$totalNow = $this->GetValue('AccToday');
-						$newTotal = $totalNow + $deltaUsage;
-						$this->SetValue('AccToday', $newTotal);
-					} else {
-						$this->SetValue('AccToday', $deltaUsage);
-					}
-
 				
-					if($this->CheckVariableByChangedHour('AccHour')) {
-						$totalNow = $this->GetValue('AccHour');
-						$newTotal = $totalNow + $deltaUsage;
-						$this->SetValue('AccHour', $newTotal);
-					} else {
-						$this->SetValue('AccHour', $deltaUsage);
-					}
+				if($this->CheckVariableByChangedMonth('AccMonth')) {
+					$totalNow = $this->GetValue('AccMonth');
+					$newTotal = $totalNow + $deltaUsage;
+					$this->SetValue('AccMonth', $newTotal);
+				} else {
+					$this->SetValue('AccMonth', $deltaUsage);
+				}
 
-					//$this->Unlock('UpdatingAccumulatedValues');
-				//}
+				if($this->CheckVariableByChangedDay('AccToday')) {
+					$totalNow = $this->GetValue('AccToday');
+					$newTotal = $totalNow + $deltaUsage;
+					$this->SetValue('AccToday', $newTotal);
+
+					$currentMaxPower = $this->GetValue('MaxPowerToday');
+					if($activePower>$currentMaxPower) {
+						$this->SetValue('MaxPowerToday', $activePower);
+					}
+				} else {
+					$this->SetValue('AccToday', $deltaUsage);
+					$this->SetValue('MaxPowerToday', $activePower);
+				}
+			
+				if($this->CheckVariableByChangedHour('AccHour')) {
+					$totalNow = $this->GetValue('AccHour');
+					$newTotal = $totalNow + $deltaUsage;
+					$this->SetValue('AccHour', $newTotal);
+				} else {
+					$this->SetValue('AccHour', $deltaUsage);
+				}
 			}
 
 			$this->SetBuffer('LastUpdateActivePower', json_encode($now));
-
-			$currentMaxPower = $this->GetValue('MaxPowerToday');
-			
-			$id = $this->GetIDForIdent('MaxPowerToday');
-			$info = IPS_GetVariable($id);
-			$lastUpdate = DateTime::createFromFormat('U', (string)$info['VariableUpdated']);
-			$now = new DateTime('now');
-
-			if($this->GetHour()==0 && $lastUpdate->Format('dmY')!=$now->Format('dmY')) {
-				$this->SetValue('MaxPowerToday', $activePower);
-			} else if($activePower>$currentMaxPower) {
-				$this->SetValue('MaxPowerToday', $activePower);
-			}
 		}
-/*		
-		if(isset($Payload->data->Q)) { // Reactive import
-			$this->SetValue('Q', $Payload->data->Q);
-		}		
 
-		if(isset($Payload->data->PO)) { //  Active export
-			$this->SetValue('PO', $Payload->data->PO);
-		}		
-
-		if(isset($Payload->data->QO)) { // Reactive export
-			$this->SetValue('QO', $Payload->data->QO);
-		}		
-*/
 		if(isset($Payload->data->I1)) { // L1 current
 			$this->SetValue('I1', $Payload->data->I1);
 		}		
@@ -272,35 +254,6 @@ class AmsReader extends IPSModule {
 			$this->SetValue('U3', $Payload->data->U3);
 		}		
 
-		if(isset($Payload->data->tPI)) { // Hourly accumulated active import
-			$newImport = $Payload->data->tPI;
-			$currentImport = $this->GetValue('tPI');
-			
-			$this->SetValue('tPI', $newImport);
-
-			$usageToday = $this->GetValue('UsageToday');
-			$newUsageToday = $usageToday + ($newImport-$currentImport);
-			
-			if($this->GetHour()==0) {
-				$this->SetValue('UsageToday', 0);
-				$this->SetValue('UsageDaily', $newUsageToday);
-			} else {
-				$this->SetValue('UsageToday', $newUsageToday);
-			}
-	}		
-/*
-		if(isset($Payload->data->tPO)) { // Hourly accumulated active export
-			$this->SetValue('tPO', $Payload->data->tPO);
-		}		
-
-		if(isset($Payload->data->tQI)) { // Hourly accumulated reactive import
-			$this->SetValue('tQI', $Payload->data->tQI);
-		}		
-
-		if(isset($Payload->data->tQO)) { // Hourly accumulated reactive export
-			$this->SetValue('tQO', $Payload->data->tQO);
-		}		
-*/
 		$this->SendDebug(__FUNCTION__, 'Completed analyzing payload', 0);	
 	}
 
@@ -321,6 +274,21 @@ class AmsReader extends IPSModule {
 		$offset = timezone_offset_get($now->getTimezone(), $now);
 		return 3600-(time()+$offset)%3600;
 	}
+
+	private function IsLastDayInMonth() {
+		$now = new DateTime('now');
+		$thisDay = (int)$now->format('d');
+		$lastDays = (int)$now->modify('last day of')->format('d');
+
+		return $thisDay==$lastDays;
+	}
+
+	private function CheckVariableByChangedMonth($Ident) {
+		$lastChanged = $this->GetVariableChanged($Ident);
+        $now = new DateTime('now');
+                		               
+        return $now->format('Ym')==$lastChanged->format('Ym');
+    }
 
 	private function CheckVariableByChangedDay($Ident) {
 		$lastChanged = $this->GetVariableChanged($Ident);
