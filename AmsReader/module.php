@@ -164,7 +164,6 @@ class AmsReader extends IPSModule {
 
 				$totalNowToday = $this->GetValue('AccToday');
 				if($this->CheckVariableByChangedDay('AccToday')) {
-					
 					$newTotal = $totalNowToday + $deltaUsage;
 					$this->SetValue('AccToday', $newTotal);
 
