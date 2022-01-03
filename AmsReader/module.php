@@ -41,6 +41,9 @@ class AmsReader extends IPSModule {
 		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 16);
 		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 17);
 		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 18);
+
+		$this->RegisterTimer('MidnightTimer', 0, 'IPS_RequestAction(' . (string)$this->InstanceID . ', "Midnight", 0);'); 
+		$this->RegisterTimer('SetMidnightTimer', 0, 'IPS_RequestAction(' . (string)$this->InstanceID . ', "SetMidnight", 0);'); 
 	}
 
 	public function Destroy() {
@@ -64,9 +67,59 @@ class AmsReader extends IPSModule {
 					
 		$this->SetReceiveDataFilter('.*' . $this->ReadPropertyString('MQTTTopic') . '".*');
 
-		$this->InitAccumulatedValues();
+		$this->RegisterMessage(0, IPS_KERNELMESSAGE);
+
+		if (IPS_GetKernelRunlevel() == KR_READY) {
+            $this->Init();
+        }
+
+		
 	}
 
+	public function MessageSink($TimeStamp, $SenderID, $Message, $Data) {
+        parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
+
+		$this->SendDebug(__FUNCTION__, sprintf('Received a message: %d - %d - %d', $SenderID, $Message, $data[0]), 0);
+
+		if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
+            $this->LogMessage('Detected "Kernel Ready"!', KL_NOTIFY);
+			$this->Init();
+		}
+    }
+
+	private function Init(bool $NewDiscover=true) {
+		$msg = 'Initializing...';
+		
+		$this->LogMessage($msg, KL_NOTIFY);
+		$this->SendDebug(__FUNCTION__, $msg, 0);
+		
+		$this->InitAccumulatedValues();
+
+		$this-SetTimerInterval('MidnightTimer', $this->SecondsToMidnight()-2);
+	}
+
+	public function RequestAction($Ident, $Value) {
+		switch (strtolower($Ident)) {
+			case 'midnight':
+				$this->SetTimerInterval('SetMidnightTimer', 10000);
+				$this->TransferValues();
+				break;
+			case 'setmidnight':
+				$this->SetTimerInterval('SetMidnightTimer', 0);
+				$this-SetTimerInterval('MidnightTimer', $this->SecondsToMidnight()-2);
+				break;
+		}
+	}
+
+	private function TransferValues() {
+		if($this->IsLastDayInMonth()) {
+			$totalNowThisMonth = $this->GetValue('AccMonth');
+			$this->SetValue('MonthlyUsage', $totalNowThisMonth);
+		}
+
+		$totalNowToday = $this->GetValue('AccToday');
+		$this->SetValue('DailyUsage', $totalNowToday);
+	}
 
 	private function InitAccumulatedValues() {
 		$this->SetBuffer('LastUpdateActivePower',json_encode(hrtime(true)));
@@ -158,7 +211,7 @@ class AmsReader extends IPSModule {
 					$newTotal = $totalNowThisMonth + $deltaUsage;
 					$this->SetValue('AccMonth', $newTotal);
 				} else {
-					$this->SetValue('MonthlyUsage', $totalNowThisMonth);
+					//$this->SetValue('MonthlyUsage', $totalNowThisMonth);
 					$this->SetValue('AccMonth', $deltaUsage);
 				}
 
@@ -172,7 +225,7 @@ class AmsReader extends IPSModule {
 						$this->SetValue('MaxPowerToday', $activePower);
 					}
 				} else {
-					$this->SetValue('DailyUsage', $totalNowToday);
+					//$this->SetValue('DailyUsage', $totalNowToday);
 					$this->SetValue('AccToday', $deltaUsage);
 					$this->SetValue('MaxPowerToday', $activePower);
 				}
