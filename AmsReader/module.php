@@ -95,7 +95,7 @@ class AmsReader extends IPSModule {
 		
 		$this->InitAccumulatedValues();
 
-		$this-SetTimerInterval('MidnightTimer', $this->SecondsToMidnight()-2);
+		$this->SetTimerInterval('MidnightTimer', $this->SecondsToMidnight()-2);
 	}
 
 	public function RequestAction($Ident, $Value) {
