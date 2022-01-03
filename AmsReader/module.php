@@ -109,6 +109,7 @@ class AmsReader extends IPSModule {
 				$this->SetTimerInterval('MidnightTimer', ($this->SecondsToMidnight()-2)*1000);
 				break;
 		}
+		
 	}
 
 	private function TransferValues() {
