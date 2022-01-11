@@ -32,15 +32,17 @@ class AmsReader extends IPSModule {
 		$this->RegisterVariableFloat('AccHour', 'Accumulated Last Hour', '~Electricity', 7);
 		$this->RegisterVariableFloat('AccToday', 'Accumulated Today', '~Electricity', 8);
 		$this->RegisterVariableFloat('AccMonth', 'Accumulated Month', '~Electricity', 9);
-		$this->RegisterVariableFloat('DailyUsage', 'Daily Usage', '~Electricity', 10);
-		$this->RegisterVariableFloat('MonthlyUsage', 'Monthly Usage', '~Electricity', 11);
-		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 12);
-		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 13);
-		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 14);
-		$this->RegisterVariableFloat('U2', 'Voltage L2', '~Volt', 15);
-		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 16);
-		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 17);
-		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 18);
+		$this->RegisterVariableFloat('AccYear', 'Accumulated Year', '~Electricity', 10);
+		$this->RegisterVariableFloat('DailyUsage', 'Daily Usage', '~Electricity', 11);
+		$this->RegisterVariableFloat('MonthlyUsage', 'Monthly Usage', '~Electricity', 12);
+		$this->RegisterVariableFloat('YearlyUsage', 'Yearly Usage', '~Electricity', 13);
+		$this->RegisterVariableFloat('tPI', 'Total Usage', '~Electricity', 14);
+		$this->RegisterVariableFloat('U1', 'Voltage L1', '~Volt', 15);
+		$this->RegisterVariableFloat('I1', 'Current L1', '~Ampere', 16);
+		$this->RegisterVariableFloat('U2', 'Voltage L2', '~Volt', 17);
+		$this->RegisterVariableFloat('I2', 'Current L2', '~Ampere', 18);
+		$this->RegisterVariableFloat('U3', 'Voltage L3', '~Volt', 19);
+		$this->RegisterVariableFloat('I3', 'Current L3', '~Ampere', 20);
 
 		$this->RegisterTimer('MidnightTimer', 0, 'IPS_RequestAction(' . (string)$this->InstanceID . ', "Midnight", 0);'); 
 		$this->RegisterTimer('SetMidnightTimer', 0, 'IPS_RequestAction(' . (string)$this->InstanceID . ', "SetMidnight", 0);'); 
@@ -113,6 +115,11 @@ class AmsReader extends IPSModule {
 	}
 
 	private function TransferValues() {
+		if($this->IsLastDayInYear()) {
+			$totalNowThisYear = $this->GetValue('AccYear');
+			$this->SetValue('YearlyUsage', $totalNowThisYear);
+		}
+
 		if($this->IsLastDayInMonth()) {
 			$totalNowThisMonth = $this->GetValue('AccMonth');
 			$this->SetValue('MonthlyUsage', $totalNowThisMonth);
@@ -210,6 +217,14 @@ class AmsReader extends IPSModule {
 			if($lastUpdateActivePower!=0) {
 				$diff = ($now-$lastUpdateActivePower)*pow(10, -9)/3600;
 				$deltaUsage = $diff*$activePower;
+
+				$totalNowThisYear = $this->GetValue('AccYear');
+				if($this->CheckVariableByChangedYear('AccYear')) {
+					$newTotal = $totalNowThisYear + $deltaUsage;
+					$this->SetValue('AccYear', $newTotal);
+				} else {
+					$this->SetValue('AccYear', $deltaUsage);
+				}
 				
 				$totalNowThisMonth = $this->GetValue('AccMonth');
 				if($this->CheckVariableByChangedMonth('AccMonth')) {
@@ -295,10 +310,25 @@ class AmsReader extends IPSModule {
 	private function IsLastDayInMonth() {
 		$now = new DateTime('now');
 		$thisDay = (int)$now->format('d');
-		$lastDays = (int)$now->modify('last day of')->format('d');
+		$lastDay = (int)$now->modify('last day of')->format('d');
 
-		return $thisDay==$lastDays;
+		return $thisDay==$lastDay;
 	}
+
+	private function IsLastDayInYear() {
+		$now = new DateTime('now');
+		$thisDay = $now->format('d-m-Y');
+		$lastDay = $now->modify('last day of december this year')->format('d-m-Y');
+	
+		return $thisDay==$lastDay;
+	}
+
+	private function CheckVariableByChangedYear($Ident) {
+		$lastChanged = $this->GetVariableChanged($Ident);
+        $now = new DateTime('now');
+                		               
+        return $now->format('Y')==$lastChanged->format('Y');
+    }
 
 	private function CheckVariableByChangedMonth($Ident) {
 		$lastChanged = $this->GetVariableChanged($Ident);
