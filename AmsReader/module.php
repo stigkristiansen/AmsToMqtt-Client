@@ -194,6 +194,10 @@ class AmsReader extends IPSModule {
 			
 			$this->SetValue('temp', $Payload->temp);
 		}
+
+		if(isset($Payload->data->tPI)) { 
+			$this->SetValue('tPI', $Payload->data->tPI);
+		}
 		
 		if(isset($Payload->data->P)) { // Active import
 			$now = hrtime(true);
