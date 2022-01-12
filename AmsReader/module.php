@@ -18,6 +18,10 @@ class AmsReader extends IPSModule {
 
 		$this->RegisterPropertyString('MQTTTopic', '');
 
+		$this->RegisterPropertyBoolean('AchiveDailyUsage', true);
+		$this->RegisterPropertyBoolean('AchiveMonthlyUsage', true);
+		$this->RegisterPropertyBoolean('AchiveYearlyUsage', true);
+
 		$this->RegisterProfileIntegerMin('AMSR.Uptime.' . $this->InstanceID, 'Hourglass', '', ' hours');
 		$this->RegisterProfileIntegerMin('AMSR.RSSI', 'Intensity' , '', ' dBm');
 		$this->RegisterProfileFloatEx('AMSR.TemperatureNA', 'Temperature' , '', '', [[-127, 'N/A', '', -1]]);
@@ -71,11 +75,41 @@ class AmsReader extends IPSModule {
 
 		$this->RegisterMessage(0, IPS_KERNELMESSAGE);
 
+		$archiveModules = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}');
+		if(count($archiveModules)>0) {
+			$archiveModuleId = $archiveModules[0];
+
+			$variableId = $this->GetIDForIdent('DailyUsage');
+			if($this->ReadPropertyBoolean('AchiveDailyUsage')) {
+				AC_SetLoggingStatus($archiveModules, $variableId, true);
+				AC_SetAggregationType($archiveModules, $variableId, 0);
+				AC_SetGraphStatus($archiveModules, $variableId, true);
+			} else {
+				AC_SetLoggingStatus($archiveModules, $variableId, false);
+			}
+
+			$variableId = $this->GetIDForIdent('MonthlyUsage');
+			if($this->ReadPropertyBoolean('AchiveMonthlyUsage')) {
+				AC_SetLoggingStatus($archiveModules, $variableId, true);
+				AC_SetAggregationType($archiveModules, $variableId, 0);
+				AC_SetGraphStatus($archiveModules, $variableId, true); 
+			} else {
+				AC_SetLoggingStatus($archiveModules, $variableId, false);
+			}
+
+			$variableId = $this->GetIDForIdent('YearlyUsage');
+			if($this->ReadPropertyBoolean('AchiveYearlyUsage')) {
+				AC_SetLoggingStatus($archiveModules, $variableId, true);
+				AC_SetAggregationType($archiveModules, $variableId, 0);
+				AC_SetGraphStatus($archiveModules, $variableId, true);
+			} else {
+				AC_SetLoggingStatus($archiveModules, $variableId, false);
+			}
+		}
+
 		if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->Init();
         }
-
-		
 	}
 
 	public function MessageSink($TimeStamp, $SenderID, $Message, $Data) {
