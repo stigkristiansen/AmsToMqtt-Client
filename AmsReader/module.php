@@ -81,29 +81,29 @@ class AmsReader extends IPSModule {
 
 			$variableId = $this->GetIDForIdent('DailyUsage');
 			if($this->ReadPropertyBoolean('AchiveDailyUsage')) {
-				AC_SetLoggingStatus($archiveModules, $variableId, true);
-				AC_SetAggregationType($archiveModules, $variableId, 0);
-				AC_SetGraphStatus($archiveModules, $variableId, true);
+				AC_SetLoggingStatus($archiveModuleId, $variableId, true);
+				AC_SetAggregationType($archiveModuleId, $variableId, 0);
+				AC_SetGraphStatus($archiveModuleId, $variableId, true);
 			} else {
-				AC_SetLoggingStatus($archiveModules, $variableId, false);
+				AC_SetLoggingStatus($archiveModuleId, $variableId, false);
 			}
 
 			$variableId = $this->GetIDForIdent('MonthlyUsage');
 			if($this->ReadPropertyBoolean('AchiveMonthlyUsage')) {
-				AC_SetLoggingStatus($archiveModules, $variableId, true);
-				AC_SetAggregationType($archiveModules, $variableId, 0);
-				AC_SetGraphStatus($archiveModules, $variableId, true); 
+				AC_SetLoggingStatus($archiveModuleId, $variableId, true);
+				AC_SetAggregationType($archiveModuleId, $variableId, 0);
+				AC_SetGraphStatus($archiveModuleId, $variableId, true); 
 			} else {
-				AC_SetLoggingStatus($archiveModules, $variableId, false);
+				AC_SetLoggingStatus($archiveModuleId, $variableId, false);
 			}
 
 			$variableId = $this->GetIDForIdent('YearlyUsage');
 			if($this->ReadPropertyBoolean('AchiveYearlyUsage')) {
-				AC_SetLoggingStatus($archiveModules, $variableId, true);
-				AC_SetAggregationType($archiveModules, $variableId, 0);
-				AC_SetGraphStatus($archiveModules, $variableId, true);
+				AC_SetLoggingStatus($archiveModuleId, $variableId, true);
+				AC_SetAggregationType($archiveModuleId, $variableId, 0);
+				AC_SetGraphStatus($archiveModuleId, $variableId, true);
 			} else {
-				AC_SetLoggingStatus($archiveModules, $variableId, false);
+				AC_SetLoggingStatus($archiveModuleId, $variableId, false);
 			}
 		}
 
