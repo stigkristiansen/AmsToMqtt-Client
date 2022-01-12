@@ -2,7 +2,7 @@
     "elements":
     [
       {"type":"ValidationTextBox", "name":"MQTTTopic", "caption":"MQTT Topic", "validate":"^(?!\\s*$).+" },
-      {"type":"Label", "caption":"Archive Received Values", "bold":"true"},
+      {"type":"Label", "caption":"Archive Received Values:"},
       {"type":"CheckBox", "caption":"Dayly Usage", "name":"AchiveDailyUsage"},
       {"type":"CheckBox", "caption":"Monthly Usage", "name":"AchiveMonthlyUsage"},
       {"type":"CheckBox", "caption":"Yearly Usage", "name":"AchiveYearlyUsage"}
