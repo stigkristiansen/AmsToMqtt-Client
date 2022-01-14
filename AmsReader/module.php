@@ -133,7 +133,7 @@ class AmsReader extends IPSModule {
 
 		$this->SetTimerInterval('MidnightTimer', ($this->SecondsToMidnight()-2)*1000);
 	}
-
+	
 	public function RequestAction($Ident, $Value) {
 		switch (strtolower($Ident)) {
 			case 'midnight':
@@ -265,10 +265,10 @@ class AmsReader extends IPSModule {
 					$newTotal = $totalNowThisMonth + $deltaUsage;
 					$this->SetValue('AccMonth', $newTotal);
 				} else {
-					//$this->SetValue('MonthlyUsage', $totalNowThisMonth);
 					$this->SetValue('AccMonth', $deltaUsage);
 				}
 
+				$this->SendDebug(__FUNCTION__, 'Analyzing Accumulated pr Day', 0);	
 				$totalNowToday = $this->GetValue('AccToday');
 				if($this->CheckVariableByChangedDay('AccToday')) {
 					$newTotal = $totalNowToday + $deltaUsage;
@@ -279,7 +279,6 @@ class AmsReader extends IPSModule {
 						$this->SetValue('MaxPowerToday', $activePower);
 					}
 				} else {
-					//$this->SetValue('DailyUsage', $totalNowToday);
 					$this->SetValue('AccToday', $deltaUsage);
 					$this->SetValue('MaxPowerToday', $activePower);
 				}
