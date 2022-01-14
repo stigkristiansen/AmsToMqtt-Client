@@ -123,7 +123,7 @@ class AmsReader extends IPSModule {
 		}
     }
 
-	private function Init(bool $NewDiscover=true) {
+	private function Init() {
 		$msg = 'Initializing...';
 		
 		$this->LogMessage($msg, KL_NOTIFY);
@@ -145,7 +145,6 @@ class AmsReader extends IPSModule {
 				$this->SetTimerInterval('MidnightTimer', ($this->SecondsToMidnight()-2)*1000);
 				break;
 		}
-		
 	}
 
 	private function TransferValues() {
